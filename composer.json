@@ -1,0 +1,10 @@
+{
+    "require": {
+        "php": ">=5.4",
+        "aws/aws-sdk-php": "*",
+        "zendframework/zend-http": "*"
+    },
+    "autoload": {
+        "psr-4": {"Zend\\": "src/"}
+    }
+}
