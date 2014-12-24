@@ -17,7 +17,7 @@ class ZSWebApiClient
     private $userAgent;
     private $client;
 
-    public function __construct($webApiKeyName,$webApiKeyHash,$timeout = 600,$url = "http://localhost:10081/ZendServer")
+    public function __construct($webApiKeyName, $webApiKeyHash, $timeout = 600, $url = "http://localhost:10081/ZendServer")
     {
         $this->webApiKeyName = $webApiKeyName;
         $this->webApiKeyHash = $webApiKeyHash;
@@ -37,18 +37,18 @@ class ZSWebApiClient
         }
     }
 
-    private function getSignature($date,$action)
+    private function getSignature($date, $action)
     {
         return "{$this->webApiKeyName};".hash_hmac('sha256', "{$this->host}:{$this->port}:{$this->path}/Api/{$action}:{$this->userAgent}:{$date}", $this->webApiKeyHash);
     }
 
-    public function __call($name,$arguments)
+    public function __call($name, $arguments)
     {
         $date = gmdate('D, d M Y H:i:s') . ' GMT';
         $headers = [
 		    'Date'             	=> $date,
 		    'User-Agent'       	=> $this->userAgent,
-		    'X-Zend-Signature' 	=> $this->getSignature($date,$name),
+		    'X-Zend-Signature' 	=> $this->getSignature($date, $name),
 			'Accept'			=> 'application/vnd.zend.serverapi+json',
         ];
 
@@ -56,15 +56,21 @@ class ZSWebApiClient
         $request->setMethod(Request::METHOD_POST);
         $request->setUri("{$this->url}/Api/{$name}");
         $request->getHeaders()->addHeaders($headers);
-        foreach($arguments[0] as $name => $value) {
+        foreach ($arguments[0] as $name => $value) {
             if(is_bool($value)) {
                 $value = $value ? "TRUE" : "FALSE";
             }
             $request->getPost()->set($name,$value);
         }
+        if (!is_array($arguments[1])) {
+            $arguments[1] = array();
+        }
+        foreach($arguments[1] as $name => $file) {
+            $request->getFiles()->set($name,$file);
+        }
 
         $response = $this->client->send($request);
-        $responseBody = json_decode($response->getBody(),true);
+        $responseBody = json_decode($response->getBody(), true);
         $data = @$responseBody['responseData'];
         $error = @$responseBody['errorData'];
         return ['code' => $response->getStatusCode(), 'reason' => $response->getReasonPhrase(), 'data' => $data, 'error' => $error];

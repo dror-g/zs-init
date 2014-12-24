@@ -21,6 +21,14 @@ downloaded to /var/www
   be downloaded to /var/www (take into account that prefix will be present in
   files downloaded, so if you restrict it to some folder then folder will be
   downloaded to document root)
+* __ZEND\_ZPK__ (array) - Details of ZPK that will be deployed on server
+  startup. Following are the keys that can be specified in this array:
+  * __url__ (string) - URL from which ZPK can be downloaded
+  * __name__ (string) - Name of application that will appear in Zend Server UI
+    after deployment
+  * __params__ (array) - Array of additional parameters that is passed to Zend
+    Server during ZPK deployment. Keys of this array are names of parameters and
+    respective values are values of parameters.
 * __ZEND\_DEBUG__ (bool) - set to true to start Zend Server in debug mode with maximum
   log verbosity
 * __ZEND\_DOCUMENT\_ROOT__ (string) - Document root relative to system default

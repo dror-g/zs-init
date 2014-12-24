@@ -6,6 +6,7 @@ use Zend\State;
 use Zend\Init\Result;
 use Zend\Deployment\GitDeployment;
 use Zend\Deployment\S3Deployment;
+use Zend\Deployment\ZpkDeployment;
 
 class DeploymentStep extends AbstractStep
 {
@@ -18,15 +19,18 @@ class DeploymentStep extends AbstractStep
     {
         $state->log->log(Log::INFO,"Starting {$this->name}");
 
-        if(isset($state["ZEND_GIT_REPO"])) {
-            $state->log->log(Log::INFO,"Initializing git deployment");
+        if (isset($state["ZEND_GIT_REPO"])) {
+            $state->log->log(Log::INFO, "Initializing git deployment");
             $deployment = new GitDeployment($state["ZEND_GIT_REPO"], $state['DEFAULT_DOCUMENT_ROOT']);
-        } else if(isset($state["ZEND_S3_BUCKET"])) {
-            $state->log->log(Log::INFO,"Initializing AWS S3 deployment");
+        } else if (isset($state["ZEND_S3_BUCKET"])) {
+            $state->log->log(Log::INFO, "Initializing AWS S3 deployment");
             if(!isset($state["ZEND_S3_PREFIX"])) {
                 $state["ZEND_S3_PREFIX"] = "";
             }
             $deployment = new S3Deployment($state["ZEND_S3_BUCKET"], $state["ZEND_S3_PREFIX"], $state['DEFAULT_DOCUMENT_ROOT'], $state['AWS_ACCESS_KEY'], $state['AWS_SECRET_KEY']);
+        } else if (isset($state['ZEND_ZPK'])) {
+            $state->log->log(Log::INFO, "Initializing ZPK deployment");
+            $deployment = new ZpkDeployment($state['ZEND_ZPK']['url'], $state['ZEND_ZPK']['name'], $state['ZEND_ZPK']['params'], $state['DEFAULT_DOCUMENT_ROOT'], $state['WEB_API_KEY_NAME'], $state['WEB_API_KEY_HASH']);
         }
 
         if(isset($deployment)) {
@@ -35,7 +39,7 @@ class DeploymentStep extends AbstractStep
         }
 
         if(isset($state["ZEND_DOCUMENT_ROOT"])) {
-            $state->log->log(Log::INFO,"Setting document root to {$state['ZEND_DOCUMENT_ROOT']}");
+            $state->log->log(Log::INFO,"Setting document root to {$state['DEFAULT_DOCUMENT_ROOT']}/{$state['ZEND_DOCUMENT_ROOT']}");
             self::pregReplaceFile("|DocumentRoot {$state['DEFAULT_DOCUMENT_ROOT']}|", "DocumentRoot {$state['DEFAULT_DOCUMENT_ROOT']}/{$state['ZEND_DOCUMENT_ROOT']}", "/etc/apache2/sites-available/000-default.conf");
             self::pregReplaceFile("|DocumentRoot {$state['DEFAULT_DOCUMENT_ROOT']}|", "DocumentRoot {$state['DEFAULT_DOCUMENT_ROOT']}/{$state['ZEND_DOCUMENT_ROOT']}", "/etc/apache2/sites-available/default-ssl.conf");
             $state->log->log(Log::INFO,"Restarting apache");
