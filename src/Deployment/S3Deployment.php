@@ -25,5 +25,8 @@ class S3Deployment extends AbstractDeployment
         exec("rm -rf {$this->defaultDocRoot}/*");
         $this->s3->downloadBucket($this->defaultDocRoot,$this->repo['bucket'],$this->repo['prefix']);
         symlink('/usr/local/zend/share/dist/dummy.php',"{$this->defaultDocRoot}/dummy.php");
+        if(is_file("{$this->defaultDocRoot}/{$this->repo['prefix']}/composer.json")) {
+            self::runComposer("{$this->defaultDocRoot}/{$this->repo['prefix']}/composer.json");
+        }
     }
 }

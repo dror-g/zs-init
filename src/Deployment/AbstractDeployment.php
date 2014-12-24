@@ -18,4 +18,9 @@ abstract class AbstractDeployment implements Deployment
     }
 
     abstract public function deploy();
+
+    public static function runComposer($dir)
+    {
+        exec("/usr/local/zend/bin/php /usr/local/zend/bin/composer.phar update -d {$dir} -o --no-progress --no-ansi -n");
+    }
 }
