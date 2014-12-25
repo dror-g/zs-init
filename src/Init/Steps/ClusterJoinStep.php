@@ -154,8 +154,9 @@ class ClusterJoinStep extends AbstractStep
     protected function waitForZendServer()
     {
         $headers = false;
-        while(!is_array($headers)) {
-            $headers = get_headers("http://127.0.0.1:10081/ZendServer");
+        while (!is_array($headers)) {
+            sleep(1);
+            $headers = @get_headers("http://127.0.0.1:10081/ZendServer");
         }
         return;
     }

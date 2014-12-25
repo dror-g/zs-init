@@ -62,7 +62,7 @@ class ZSWebApiClient
             }
             $request->getPost()->set($name,$value);
         }
-        if (!is_array($arguments[1])) {
+        if (!is_array(@$arguments[1])) {
             $arguments[1] = array();
         }
         foreach($arguments[1] as $name => $file) {
