@@ -21,8 +21,9 @@ class DeploymentStep extends AbstractStep
 
         $state->log->log(Log::INFO,"Downloading composer");
         $composer = file_get_contents("https://getcomposer.org/composer.phar");
-        file_put_contents("/usr/local/zend/bin/composer.phar",$composer);
-        chmod("/usr/local/zend/bin/composer.phar",0755);
+        file_put_contents("/usr/local/zend/bin/composer.phar", $composer);
+        chmod("/usr/local/zend/bin/composer.phar", 0755);
+        putenv("COMPOSER_HOME=/root");
 
         if (isset($state["ZEND_GIT_REPO"])) {
             $state->log->log(Log::INFO, "Initializing git deployment");
