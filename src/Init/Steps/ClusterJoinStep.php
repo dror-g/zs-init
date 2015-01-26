@@ -81,7 +81,7 @@ class ClusterJoinStep extends AbstractStep
         $client = new ZSWebApiClient($state['WEB_API_KEY_NAME'],$state['WEB_API_KEY_HASH']);
         $response = $client->bootstrapSingleServer([
             'adminPassword' => $state['ZEND_ADMIN_PASSWORD'],
-            'production' => true,
+            'production' => $state['EDITION'] != "developer",
             'orderNumber' => $state['ZEND_LICENSE_ORDER'],
             'licenseKey' => $state['ZEND_LICENSE_KEY'],
             'acceptEula' => true,
