@@ -54,16 +54,15 @@ class ClusterJoinStep extends AbstractStep
                 if($result instanceof Result) {
                     return $result;
                 }
+
+                $state->log->log(Log::INFO,"Restarting PHP");
+                $result = $this->restartPhp($state);
+                if($result instanceof Result) {
+                    return $result;
+                }
             }
         }
 
-        if(isset($state['ZEND_ADMIN_PASSWORD'])) {
-            $state->log->log(Log::INFO,"Restarting PHP");
-            $result = $this->restartPhp($state);
-            if($result instanceof Result) {
-                return $result;
-            }
-        }
         $state->log->log(Log::INFO,"Finished {$this->name}");
 
         return new Result(Result::STATUS_SUCCESS);
