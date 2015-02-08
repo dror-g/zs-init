@@ -53,7 +53,11 @@ class ZSWebApiClient
         ];
 
         $request = new Request();
-        $request->setMethod(Request::METHOD_POST);
+        if(@$arguments[2] === true) {
+            $request->setMethod(Request::METHOD_GET);
+        } else {
+            $request->setMethod(Request::METHOD_POST);
+        }
         $request->setUri("{$this->url}/Api/{$name}");
         $request->getHeaders()->addHeaders($headers);
         foreach ($arguments[0] as $name => $value) {

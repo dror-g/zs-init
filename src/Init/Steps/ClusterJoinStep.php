@@ -90,11 +90,22 @@ class ClusterJoinStep extends AbstractStep
             return new Result(Result::STATUS_ERROR,$response['error']['errorCode'] . ": " . $response['error']['errorMessage']);
         }
 
-        if($response['data']['success']) {
-            $state['WEB_API_KEY_NAME'] = $response['data']['key']['name'];
-            $state['WEB_API_KEY_HASH'] = $response['data']['key']['hash'];
+        $state['WEB_API_KEY_NAME'] = $response['data']['key']['name'];
+        $state['WEB_API_KEY_HASH'] = $response['data']['key']['hash'];
+        if(!$response['data']['success']) {
+            while(!($result = $this->tasksComplete($state))) {
+                $state->log(Log::INFO, "Waiting for ZS tasks to complete (last result: {$result})");
+                sleep(3);
+            }
         }
         return true;
+    }
+
+    protected function tasksComplete(State $state)
+    {
+        $client = new ZSWebApiClient($state['WEB_API_KEY_NAME'],$state['WEB_API_KEY_HASH']);
+        $response = $client->tasksComplete([], [], true);
+        return $response['data']['tasksComplete'];
     }
 
     protected function storeDirective(State $state,$directives)
