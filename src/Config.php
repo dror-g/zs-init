@@ -10,7 +10,7 @@ class Config
     const SYSTEM_CONFIG_FILE=ZEND_CONFIG_SYSTEM_CONFIG_FILE;
     private $config;
 
-    public function __construct()
+    public function __construct(Log $log)
     {
         $this->config = [];
         if(is_file(self::SYSTEM_CONFIG_FILE)) {
@@ -21,7 +21,11 @@ class Config
             $tmp = json_decode($userData,true);
             if(is_array($tmp)) {
                 $this->config = array_merge($tmp,$this->config);
+            } else {
+                $log->log(Log::WARNING, "Failed parsing user data");
             }
+        } else {
+            $log->log(Log::WARNING, "Failed retrieving user data");
         }
     }
 

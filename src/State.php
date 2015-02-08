@@ -12,18 +12,19 @@ class State implements ArrayAccess
     const STATE_FILE=ZEND_STATE_STATE_FILE;
     protected $state;
 
-    public function __construct()
+    public function __construct(Log $log)
     {
         $state = "";
         if(is_file(self::STATE_FILE)) {
             $state = json_decode(file_get_contents(self::STATE_FILE),true);
         }
         if(!is_array($state)) {
-            $config = new Config();
+            $config = new Config($log);
             $state = $config->getConfig();
         }
 
         $this->state = new ArrayObject($state,ArrayObject::ARRAY_AS_PROPS);
+        $this->log = $log;
     }
 
     public function __destruct()

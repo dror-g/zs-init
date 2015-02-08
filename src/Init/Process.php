@@ -1,7 +1,6 @@
 <?php
 namespace Zend\Init;
 
-use Zend\Config;
 use Zend\Log;
 use Zend\State;
 use Zend\Init\Step;
@@ -21,13 +20,13 @@ class Process
                 throw new Exception("At least one of initialization steps is invalid");
             }
         }
-        $this->state = new State();
+        $log = new Log(self::LOG_FILENAME);
+        $this->state = new State($log);
         $this->steps = $steps;
     }
 
     public function execute()
     {
-        $this->state->log = new Log(self::LOG_FILENAME);
         $success = true;
         foreach($this->steps as $step) {
             $result = $step->execute($this->state);
