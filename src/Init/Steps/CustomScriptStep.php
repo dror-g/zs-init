@@ -27,12 +27,22 @@ class CustomScriptStep extends AbstractStep
                 $s3 = S3Client::factory($options);
                 $s3->registerStreamWrapper();
             }
+
+            if(is_dir($state['ZEND_SCRIPT_PATH'])) {
+                $filename = basename($state['ZEND_SCRIPT_URL']);
+                $state->log->log(Log::WARNING, "ZEND_SCRIPT_PATH targets directory {$state['ZEND_SCRIPT_PATH']}, adding filename {$filename} from URL");
+                $state['ZEND_SCRIPT_PATH'] .= DIRECTORY_SEPARATOR . $filename;
+            }
+
             $state->log->log(Log::INFO, "Downloading custom script from {$state['ZEND_SCRIPT_URL']} to {$state['ZEND_SCRIPT_PATH']}");
             $scriptData = file_get_contents($state['ZEND_SCRIPT_URL']);
             file_put_contents($state['ZEND_SCRIPT_PATH'], $scriptData);
             chmod($state['ZEND_SCRIPT_PATH'], 0755);
             $state->log->log(Log::INFO, "Executing {$state['ZEND_SCRIPT_PATH']}");
-            exec($state['ZEND_SCRIPT_PATH'], $output);
+            exec($state['ZEND_SCRIPT_PATH'], $output, $exitCode);
+            if($exitCode !== 0) {
+                $state->log->log(Log::WARNING, "Custom script exit code {$exitCode}");
+            }
             $output = implode("\n", $output);
             $state->log->log(Log::INFO, "Custom script output\n{$output}");
         }
