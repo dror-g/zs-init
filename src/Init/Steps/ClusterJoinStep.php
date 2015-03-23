@@ -33,6 +33,12 @@ class ClusterJoinStep extends AbstractStep
             if($result instanceof Result) {
                 return $result;
             }
+
+            $state->log->log(Log::INFO,"Restarting PHP");
+            $result = $this->restartPhp($state);
+            if($result instanceof Result) {
+                return $result;
+            }
         }
 
         if(isset($state['ZEND_ADMIN_PASSWORD'],$state['ZEND_CLUSTER_DB_HOST'],$state['ZEND_CLUSTER_DB_USER'],$state['ZEND_CLUSTER_DB_PASSWORD'])) {
@@ -70,9 +76,11 @@ class ClusterJoinStep extends AbstractStep
 
     protected function deleteAmazonAuth()
     {
-        self::rmDir('/usr/local/zend/gui/3rdparty/AmazonHttpAuth');
-        unlink('/usr/local/zend/gui/3rdparty/modules.config.php');
-        rename('/usr/local/zend/gui/3rdparty/modules.config.php.old', '/usr/local/zend/gui/3rdparty/modules.config.php');
+        if (is_dir('/usr/local/zend/gui/3rdparty/AmazonHttpAuth')) {
+            self::rmDir('/usr/local/zend/gui/3rdparty/AmazonHttpAuth');
+            unlink('/usr/local/zend/gui/3rdparty/modules.config.php');
+            rename('/usr/local/zend/gui/3rdparty/modules.config.php.old', '/usr/local/zend/gui/3rdparty/modules.config.php');
+        }
     }
 
     protected function bootstrapSingleServer(State $state)
@@ -94,7 +102,8 @@ class ClusterJoinStep extends AbstractStep
         $state['WEB_API_KEY_HASH'] = $response['data']['key']['hash'];
         if(!$response['data']['success']) {
             while(!($result = $this->tasksComplete($state))) {
-                $state->log(Log::INFO, "Waiting for ZS tasks to complete (last result: {$result})");
+                $strResult = $result ? "true" : "false";
+                $state->log->log(Log::INFO, "Waiting for ZS tasks to complete (last result: {$strResult})");
                 sleep(3);
             }
         }
