@@ -19,14 +19,18 @@ class DebugSettingsStep extends AbstractStep
             $state->log->log(Log::INFO,"Setting logging level to debug in ini files");
             self::pregReplaceFile('/zend_gui.logVerbosity\\s*=.*$/m', "zend_gui.logVerbosity = DEBUG", "/usr/local/zend/gui/config/zs_ui.ini");
             self::pregReplaceFile('/zend_gui.debugModeEnabled\\s*=.*$/m', 'zend_gui.debugModeEnabled = true', "/usr/local/zend/gui/config/zs_ui.ini");
+            self::pregReplaceFile('/zend_jobqueue.daemon.log_verbosity_level\\s*=.*$/m', 'zend_jobqueue.daemon.log_verbosity_level=5', "/usr/local/zend/etc/jqd.ini");
+            self::pregReplaceFile('/zend_monitor.daemon.log_verbosity\\s*=.*$/m', 'zend_monitor.daemon.log_verbosity=5', "/usr/local/zend/etc/monitor_node.ini");
+            self::pregReplaceFile('/zend_sc.daemon.log_verbosity_level\\s*=.*$/m', 'zend_sc.daemon.log_verbosity_level=5', "/usr/local/zend/etc/scd.ini");
             self::pregReplaceFile('/zend_deployment.daemon.log_verbosity_level\\s*=.*$/m', 'zend_deployment.daemon.log_verbosity_level=5', "/usr/local/zend/etc/zdd.ini");
             self::pregReplaceFile('/zend_server_daemon.log_verbosity_level\\s*=.*$/m', 'zend_server_daemon.log_verbosity_level=5', "/usr/local/zend/etc/zsd.ini");
         }
 
         $state->log->log(Log::INFO,"Cleaning semaphores");
+        exec("/usr/local/zend/bin/clean_semaphores.sh");
         exec("rm -rf /usr/local/zend/tmp/zsemfile_*");
         exec("rm -rf /usr/local/zend/tmp/zshm_*");
-        exec("/usr/local/zend/bin/clean_semaphores.sh");
+        exec("truncate -s0 /usr/local/zend/var/log/datacache.log");
 
         self::zendServerControl('start',$state->log);
         $state->log->log(Log::INFO,"Finished {$this->name}");
