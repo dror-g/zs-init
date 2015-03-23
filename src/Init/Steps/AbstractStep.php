@@ -29,10 +29,11 @@ abstract class AbstractStep implements Step
             $objects = scandir($dir);
             foreach($objects as $object) {
                 if($object != "." && $object != "..") {
-                    if(is_dir($dir."/".$object))
+                    if(is_dir($dir."/".$object)) {
                         self::rmDir($dir."/".$object);
-                    else
+                    } else {
                         unlink($dir."/".$object);
+                    }
                 }
             }
             rmdir($dir);
