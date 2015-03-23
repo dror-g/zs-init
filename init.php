@@ -3,6 +3,8 @@
 require(__DIR__ . '/vendor/autoload.php');
 
 use Zend\Log;
+use Zend\Init\Steps\PrepareStep;
+use Zend\Init\Steps\CustomPreScriptStep;
 use Zend\Init\Steps\LicenseStep;
 use Zend\Init\Steps\ZsdWebApiKeyStep;
 use Zend\Init\Steps\DebugSettingsStep;
@@ -16,9 +18,13 @@ if($argc != 1) {
     die("Usage: {$argv[0]}\n");
 }
 
+ini_set("memory_limit", "1G");
+
 $result = null;
 try {
     $steps = [
+        new PrepareStep(),
+        new CustomPreScriptStep(),
         new LicenseStep(),
         new ZsdWebApiKeyStep(),
         new DebugSettingsStep(),

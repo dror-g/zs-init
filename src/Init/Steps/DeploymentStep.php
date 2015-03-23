@@ -1,12 +1,14 @@
 <?php
 namespace Zend\Init\Steps;
 
+use Zend\Deployment\Deployment;
 use Zend\Log;
 use Zend\State;
 use Zend\Init\Result;
 use Zend\Deployment\GitDeployment;
 use Zend\Deployment\S3Deployment;
 use Zend\Deployment\ZpkDeployment;
+use Zend\ZSWebApiClient;
 
 class DeploymentStep extends AbstractStep
 {
@@ -25,34 +27,79 @@ class DeploymentStep extends AbstractStep
         chmod("/usr/local/zend/bin/composer.phar", 0755);
         putenv("COMPOSER_HOME=/root");
 
-        if (isset($state["ZEND_GIT_REPO"])) {
-            $state->log->log(Log::INFO, "Initializing git deployment");
-            $deployment = new GitDeployment($state["ZEND_GIT_REPO"], $state['DEFAULT_DOCUMENT_ROOT']);
-        } else if (isset($state["ZEND_S3_BUCKET"])) {
-            $state->log->log(Log::INFO, "Initializing AWS S3 deployment");
-            if(!isset($state["ZEND_S3_PREFIX"])) {
-                $state["ZEND_S3_PREFIX"] = "";
+        $restartZendServer = false;
+        $restartApache = false;
+        foreach ($state['ZEND_DEPLOYMENTS'] as $deployment) {
+            if ($deployment['type'] == 'git') {
+                $state->log->log(Log::INFO, "Deploying git application to {$deployment['path']}");
+                $deploymentObj = new GitDeployment($deployment['path'], $state->log, $deployment['url'], $deployment['relativeRoot']);
+                $restartApache = true;
+            } else if ($deployment['type'] == 's3') {
+                $state->log->log(Log::INFO, "Deploying S3 application to {$deployment['path']}");
+                $deploymentObj = new S3Deployment($deployment['path'], $state->log, $deployment['bucket'], $deployment['prefix'], $deployment['relativeRoot'], $state['AWS_ACCESS_KEY'], $state['AWS_SECRET_KEY']);
+                $restartApache = true;
+            } else if ($deployment['type'] === 'zpk') {
+                $state->log->log(Log::INFO, "Deploying ZPK application to {$deployment['path']}");
+                $deploymentObj = new ZpkDeployment($deployment['path'], $state->log, $deployment['url'], $deployment['name'], $deployment['params'], $state['WEB_API_KEY_NAME'], $state['WEB_API_KEY_HASH']);
+                $restartZendServer = true;
+            } else {
+                $state->log->log(Log::ERROR, "Unknown deployment type '{$deployment['type']}'");
+                continue;
             }
-            $deployment = new S3Deployment($state["ZEND_S3_BUCKET"], $state["ZEND_S3_PREFIX"], $state['DEFAULT_DOCUMENT_ROOT'], $state['AWS_ACCESS_KEY'], $state['AWS_SECRET_KEY']);
-        } else if (isset($state['ZEND_ZPK'])) {
-            $state->log->log(Log::INFO, "Initializing ZPK deployment");
-            $deployment = new ZpkDeployment($state['ZEND_ZPK']['url'], $state['ZEND_ZPK']['name'], $state['ZEND_ZPK']['params'], $state['DEFAULT_DOCUMENT_ROOT'], $state['WEB_API_KEY_NAME'], $state['WEB_API_KEY_HASH']);
+
+            if (!$deploymentObj->deploy()) {
+                $state->log->log(Log::ERROR, "Failed deploying application to " . $deploymentObj->getPath());
+                $state->log->log(Log::ERROR, $deploymentObj->getError());
+            } else {
+                $state->log->log(Log::INFO, "Successfully deployed application to " . $deploymentObj->getPath());
+            }
         }
 
-        if(isset($deployment)) {
-            $state->log->log(Log::INFO,"Deploying application");
-            $deployment->deploy();
+        if ($restartApache) {
+            $state->log->log(Log::INFO,"Restarting apache");
+            self::zendServerControl("restart-apache", $state->log);
+        }
+
+        if ($restartZendServer) {
+            $state->log->log(Log::INFO,"Restarting PHP");
+            $result = $this->restartPhp($state);
+            if($result instanceof Result) {
+                return $result;
+            }
+        }
+
+        if (count($state['ZEND_DEPLOYMENTS']) == 0) {
+            $state->log->log(Log::INFO, "No applications to deploy");
         }
 
         if(isset($state["ZEND_DOCUMENT_ROOT"])) {
-            $state->log->log(Log::INFO,"Setting document root to {$state['DEFAULT_DOCUMENT_ROOT']}/{$state['ZEND_DOCUMENT_ROOT']}");
-            self::pregReplaceFile("|DocumentRoot {$state['DEFAULT_DOCUMENT_ROOT']}|", "DocumentRoot {$state['DEFAULT_DOCUMENT_ROOT']}/{$state['ZEND_DOCUMENT_ROOT']}", "/etc/apache2/sites-available/000-default.conf");
-            self::pregReplaceFile("|DocumentRoot {$state['DEFAULT_DOCUMENT_ROOT']}|", "DocumentRoot {$state['DEFAULT_DOCUMENT_ROOT']}/{$state['ZEND_DOCUMENT_ROOT']}", "/etc/apache2/sites-available/default-ssl.conf");
+            $defaultDocumentRoot = Deployment::DEFAULT_DOCUMENT_ROOT;
+            $state->log->log(Log::INFO, "Setting document root to {$defaultDocumentRoot}/{$state['ZEND_DOCUMENT_ROOT']}");
+            if (is_dir("/etc/apache2")) {
+                self::pregReplaceFile("|DocumentRoot {$defaultDocumentRoot}|", "DocumentRoot {$defaultDocumentRoot}/{$state['ZEND_DOCUMENT_ROOT']}", "/etc/apache2/sites-available/000-default.conf");
+                self::pregReplaceFile("|DocumentRoot {$defaultDocumentRoot}|", "DocumentRoot {$defaultDocumentRoot}/{$state['ZEND_DOCUMENT_ROOT']}", "/etc/apache2/sites-available/default-ssl.conf");
+            } else if (is_dir("/etc/httpd")) {
+                self::pregReplaceFile("|DocumentRoot \"{$defaultDocumentRoot}\"|", "DocumentRoot {$defaultDocumentRoot}/{$state['ZEND_DOCUMENT_ROOT']}", "/etc/httpd/conf/httpd.conf");
+            }
             $state->log->log(Log::INFO,"Restarting apache");
-            exec("/etc/init.d/apache2 reload");
+            self::zendServerControl("restart-apache", $state->log);
         }
 
         $state->log->log(Log::INFO,"Finished {$this->name}");
         return new Result(Result::STATUS_SUCCESS);
+    }
+
+    protected function restartPhp(State $state)
+    {
+        $client = new ZSWebApiClient($state['WEB_API_KEY_NAME'],$state['WEB_API_KEY_HASH'],420);
+        $response = $client->restartPhp([
+            'force' => true,
+        ]);
+
+        if(isset($response['error'])) {
+            return new Result(Result::STATUS_ERROR,$response['error']['errorCode'] . ": " . $response['error']['errorMessage']);
+        }
+
+        return true;
     }
 }
