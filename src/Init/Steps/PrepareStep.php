@@ -63,7 +63,7 @@ class PrepareStep extends AbstractStep
         $deployments = array();
         for ($i = 0; $i < count($state['ZEND_DEPLOYMENTS']); ++$i) {
             $deployment = $state['ZEND_DEPLOYMENTS'][$i];
-            if ($deployment['type'] === "zpk") {
+            if ($deployment['type'] === "zpk" && is_array($deployment['params'])) {
                 foreach ($deployment['params'] as &$value) {
                     $value = str_replace('$IP', $ip, $value);
                 }
