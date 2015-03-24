@@ -27,7 +27,8 @@ class Config
                 $this->config = array_merge($tmp,$this->config);
             } else {
                 $tmp = var_export($tmp, true);
-                $log->log(Log::WARNING, "Failed parsing user data ({$tmp})");
+                $error = json_last_error_msg();
+                $log->log(Log::WARNING, "Failed parsing user data (retval: {$tmp}, error: {$error})");
             }
         } else {
             $log->log(Log::WARNING, "Failed retrieving user data");
