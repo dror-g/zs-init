@@ -32,11 +32,11 @@ class DeploymentStep extends AbstractStep
         foreach ($state['ZEND_DEPLOYMENTS'] as $deployment) {
             if ($deployment['type'] == 'git') {
                 $state->log->log(Log::INFO, "Deploying git application to {$deployment['path']}");
-                $deploymentObj = new GitDeployment($deployment['path'], $state->log, $deployment['url'], $deployment['relativeRoot']);
+                $deploymentObj = new GitDeployment($deployment['path'], $state->log, $deployment['url'], @$deployment['relativeRoot']);
                 $restartApache = true;
             } else if ($deployment['type'] == 's3') {
-                $state->log->log(Log::INFO, "Deploying S3 application to {$deployment['path']}");
-                $deploymentObj = new S3Deployment($deployment['path'], $state->log, $deployment['bucket'], $deployment['prefix'], $deployment['relativeRoot'], $state['AWS_ACCESS_KEY'], $state['AWS_SECRET_KEY']);
+                $state->log->log(Log::INFO, "Deploying S3 application from s3://{$deployment['bucket']}/{$deployment['prefix']} to {$deployment['path']}");
+                $deploymentObj = new S3Deployment($deployment['path'], $state->log, @$deployment['relativeRoot'], $deployment['bucket'], $deployment['prefix'], $state['AWS_ACCESS_KEY'], $state['AWS_SECRET_KEY']);
                 $restartApache = true;
             } else if ($deployment['type'] === 'zpk') {
                 $state->log->log(Log::INFO, "Deploying ZPK application to {$deployment['path']}");
