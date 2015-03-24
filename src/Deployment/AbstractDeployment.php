@@ -92,9 +92,9 @@ abstract class AbstractDeployment implements Deployment
         if ($this->relativeRoot != "") {
             $aliasDir .= "/{$this->relativeRoot}";
         }
+        $this->log->log(Log::INFO, "Updating apache config for {$this->path}");
+        self::addApacheDirectory($aliasDir);
         if ($this->deploymentDir != Deployment::DEFAULT_DOCUMENT_ROOT) {
-            $this->log->log(Log::INFO, "Updating apache config for {$this->path}");
-            self::addApacheDirectory($aliasDir);
             self::addApacheAlias($aliasDir, $this->path);
         }
     }
