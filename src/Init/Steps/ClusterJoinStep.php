@@ -86,9 +86,13 @@ class ClusterJoinStep extends AbstractStep
     protected function bootstrapSingleServer(State $state)
     {
         $client = new ZSWebApiClient($state['WEB_API_KEY_NAME'],$state['WEB_API_KEY_HASH']);
+        $production = true;
+        if ($state['EDITION'] == "developer" || (isset($state['ZEND_BOOTSTRAP_PRODUCTION']) && $state['ZEND_BOOTSTRAP_PRODUCTION'] === false)) {
+            $production = false;
+        }
         $response = $client->bootstrapSingleServer([
             'adminPassword' => $state['ZEND_ADMIN_PASSWORD'],
-            'production' => $state['EDITION'] != "developer",
+            'production' => $production,
             'orderNumber' => $state['ZEND_LICENSE_ORDER'],
             'licenseKey' => $state['ZEND_LICENSE_KEY'],
             'acceptEula' => true,
