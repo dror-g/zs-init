@@ -53,6 +53,11 @@ class Config
         return gethostbyname('instance-data.ec2.internal.') != 'instance-data.ec2.internal.';
     }
 
+    public static function isGoogleComputeEngine()
+    {
+        return gethostbyname('metadata.google.internal.') != 'metadata.google.internal.';
+    }
+
     public static function isAzure()
     {
         return is_dir('/var/lib/waagent');
@@ -77,6 +82,15 @@ class Config
             xml_parse_into_struct($parser, file_get_contents('/var/lib/waagent/ovf-env.xml'), $values, $index);
             xml_parser_free($parser);
             return base64_decode($values[$index['CUSTOMDATA'][0]]['value']);
+        } else if (self::isGoogleComputeEngine()) {
+            $opts = [
+                'http' => [
+                    'method' => "GET",
+                    'header' => "Metadata-Flavor: Google\r\n"
+                ]
+            ];
+            $context = stream_context_create($opts);
+            return @file_get_contents("http://metadata.google.internal/computeMetadata/v1/instance/attributes/zend", false, $context);
         }
         return false;
     }
