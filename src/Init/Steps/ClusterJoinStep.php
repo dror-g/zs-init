@@ -19,7 +19,7 @@ class ClusterJoinStep extends AbstractStep
     public function execute(State $state)
     {
         $state->log->log(Log::INFO,"Starting {$this->name}");
-        if(isset($state['ZEND_ADMIN_PASSWORD'])) {
+        if(isset($state['ZEND_ADMIN_PASSWORD']) && !isset($state['WEB_API_KEY_NAME'], $state['WEB_API_KEY_HASH'])) {
             $state->log->log(Log::INFO,"Deleting AWS HTTP authentication module");
             $this->deleteAmazonAuth();
 
