@@ -30,7 +30,7 @@ class ZSWebApiClient
         $this->client->setEncType(Client::ENC_FORMDATA);
 
         $parsedUrl = parse_url($url);
-        if($url !== false) {
+        if ($url !== false) {
             $this->host = $parsedUrl['host'];
             $this->port = $parsedUrl['port'];
             $this->path = $parsedUrl['path'];
@@ -46,14 +46,14 @@ class ZSWebApiClient
     {
         $date = gmdate('D, d M Y H:i:s') . ' GMT';
         $headers = [
-		    'Date'             	=> $date,
-		    'User-Agent'       	=> $this->userAgent,
-		    'X-Zend-Signature' 	=> $this->getSignature($date, $name),
-			'Accept'			=> 'application/vnd.zend.serverapi+json',
+            'Date'                 => $date,
+            'User-Agent'           => $this->userAgent,
+            'X-Zend-Signature'    => $this->getSignature($date, $name),
+            'Accept'            => 'application/vnd.zend.serverapi+json',
         ];
 
         $request = new Request();
-        if(@$arguments[2] === true) {
+        if (@$arguments[2] === true) {
             $request->setMethod(Request::METHOD_GET);
         } else {
             $request->setMethod(Request::METHOD_POST);
@@ -61,16 +61,16 @@ class ZSWebApiClient
         $request->setUri("{$this->url}/Api/{$name}");
         $request->getHeaders()->addHeaders($headers);
         foreach ($arguments[0] as $name => $value) {
-            if(is_bool($value)) {
+            if (is_bool($value)) {
                 $value = $value ? "TRUE" : "FALSE";
             }
-            $request->getPost()->set($name,$value);
+            $request->getPost()->set($name, $value);
         }
         if (!is_array(@$arguments[1])) {
             $arguments[1] = array();
         }
-        foreach($arguments[1] as $name => $file) {
-            $request->getFiles()->set($name,$file);
+        foreach ($arguments[1] as $name => $file) {
+            $request->getFiles()->set($name, $file);
         }
 
         $response = $this->client->send($request);

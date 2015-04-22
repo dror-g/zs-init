@@ -9,7 +9,7 @@ class Result
     private $status;
     private $message;
 
-    public function __construct($status,$message = null)
+    public function __construct($status, $message = null)
     {
         $this->status = $status;
         $this->message = $message;

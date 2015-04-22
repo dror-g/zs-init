@@ -15,7 +15,7 @@ class PrepareStep extends AbstractStep
 
     public function execute(State $state)
     {
-        $state->log->log(Log::INFO,"Starting {$this->name}");
+        $state->log->log(Log::INFO, "Starting {$this->name}");
 
         if (!isset($state['ZEND_DEPLOYMENTS'])) {
             $state['ZEND_DEPLOYMENTS'] = array();
@@ -73,7 +73,7 @@ class PrepareStep extends AbstractStep
         }
         $state['ZEND_DEPLOYMENTS'] = $deployments;
 
-        $state->log->log(Log::INFO,"Finished {$this->name}");
+        $state->log->log(Log::INFO, "Finished {$this->name}");
         return new Result(Result::STATUS_SUCCESS);
     }
 

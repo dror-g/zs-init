@@ -5,7 +5,7 @@ use ArrayObject;
 use ArrayAccess;
 use Exception;
 
-define("ZEND_STATE_STATE_FILE",__DIR__ . '/../data/state');
+define("ZEND_STATE_STATE_FILE", __DIR__ . '/../data/state');
 
 class State implements ArrayAccess
 {
@@ -15,21 +15,21 @@ class State implements ArrayAccess
     public function __construct(Log $log)
     {
         $state = "";
-        if(is_file(self::STATE_FILE)) {
-            $state = json_decode(file_get_contents(self::STATE_FILE),true);
+        if (is_file(self::STATE_FILE)) {
+            $state = json_decode(file_get_contents(self::STATE_FILE), true);
         }
-        if(!is_array($state)) {
+        if (!is_array($state)) {
             $config = new Config($log);
             $state = $config->getConfig();
         }
 
-        $this->state = new ArrayObject($state,ArrayObject::ARRAY_AS_PROPS);
+        $this->state = new ArrayObject($state, ArrayObject::ARRAY_AS_PROPS);
         $this->log = $log;
     }
 
     public function __destruct()
     {
-        file_put_contents(self::STATE_FILE,json_encode($this->state));
+        file_put_contents(self::STATE_FILE, json_encode($this->state));
     }
 
     public function merge(array $parameters)
@@ -39,13 +39,13 @@ class State implements ArrayAccess
 
     public function __get($name)
     {
-        if(isset($this->state[$name])) {
+        if (isset($this->state[$name])) {
             return $this->state[$name];
         }
         return null;
     }
 
-    public function __set($name,$value)
+    public function __set($name, $value)
     {
         $this->state[$name] = $value;
     }
@@ -67,7 +67,7 @@ class State implements ArrayAccess
 
     public function offsetGet($offset)
     {
-        if(isset($this->state[$offset])) {
+        if (isset($this->state[$offset])) {
             return $this->state[$offset];
         }
         return null;

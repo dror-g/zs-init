@@ -14,13 +14,13 @@ class CustomScriptStep extends AbstractStep
 
     public function execute(State $state)
     {
-        $state->log->log(Log::INFO,"Starting {$this->name}");
-        if(isset($state['ZEND_SCRIPT_URL'], $state['ZEND_SCRIPT_PATH'])) {
-            if(substr($state['ZEND_SCRIPT_URL'], 0, 3) === "s3:") {
+        $state->log->log(Log::INFO, "Starting {$this->name}");
+        if (isset($state['ZEND_SCRIPT_URL'], $state['ZEND_SCRIPT_PATH'])) {
+            if (substr($state['ZEND_SCRIPT_URL'], 0, 3) === "s3:") {
                 $state->log->log(Log::INFO, "Setting up S3 stream wrapper");
                 $region = substr(file_get_contents("http://169.254.169.254/latest/meta-data/placement/availability-zone"), 0, -1);
                 $options = ['region' => $region];
-                if(isset($state['AWS_ACCESS_KEY'], $state['AWS_SECRET_KEY'])) {
+                if (isset($state['AWS_ACCESS_KEY'], $state['AWS_SECRET_KEY'])) {
                     $options['key'] = $state['AWS_ACCESS_KEY'];
                     $options['secret'] = $state['AWS_SECRET_KEY'];
                 }
@@ -28,7 +28,7 @@ class CustomScriptStep extends AbstractStep
                 $s3->registerStreamWrapper();
             }
 
-            if(is_dir($state['ZEND_SCRIPT_PATH'])) {
+            if (is_dir($state['ZEND_SCRIPT_PATH'])) {
                 $filename = basename($state['ZEND_SCRIPT_URL']);
                 $state->log->log(Log::WARNING, "ZEND_SCRIPT_PATH targets directory {$state['ZEND_SCRIPT_PATH']}, adding filename {$filename} from URL");
                 $state['ZEND_SCRIPT_PATH'] .= DIRECTORY_SEPARATOR . $filename;
@@ -40,13 +40,13 @@ class CustomScriptStep extends AbstractStep
             chmod($state['ZEND_SCRIPT_PATH'], 0755);
             $state->log->log(Log::INFO, "Executing {$state['ZEND_SCRIPT_PATH']}");
             exec($state['ZEND_SCRIPT_PATH'], $output, $exitCode);
-            if($exitCode !== 0) {
+            if ($exitCode !== 0) {
                 $state->log->log(Log::WARNING, "Custom script exit code {$exitCode}");
             }
             $output = implode("\n", $output);
             $state->log->log(Log::INFO, "Custom script output\n{$output}");
         }
-        $state->log->log(Log::INFO,"Finished {$this->name}");
+        $state->log->log(Log::INFO, "Finished {$this->name}");
         return new Result(Result::STATUS_SUCCESS);
     }
 }

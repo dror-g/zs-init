@@ -51,7 +51,7 @@ abstract class AbstractDeployment implements Deployment
     public function runComposer()
     {
         $this->log->log(Log::INFO, "Running composer for directory {$this->deploymentDir}");
-        if(is_file("{$this->deploymentDir}/composer.json")) {
+        if (is_file("{$this->deploymentDir}/composer.json")) {
             exec("/usr/local/zend/bin/php /usr/local/zend/bin/composer.phar update -d {$this->deploymentDir}/ -o --no-progress --no-ansi -n");
         }
     }
@@ -122,7 +122,7 @@ abstract class AbstractDeployment implements Deployment
     {
         if (is_dir("/etc/apache2") && !self::strposFile($string, "/etc/apache2/sites-available/000-default.conf")) {
             self::pregReplaceFile("|\\<\\/VirtualHost\\>|", "{$string}\n</VirtualHost>", "/etc/apache2/sites-available/000-default.conf");
-        } else if (is_dir("/etc/httpd") && !self::strposFile($string, "/etc/httpd/conf/httpd.conf")) {
+        } elseif (is_dir("/etc/httpd") && !self::strposFile($string, "/etc/httpd/conf/httpd.conf")) {
             self::pregReplaceFile("|\\<\\/VirtualHost\\>|", "{$string}\n</VirtualHost>", "/etc/httpd/conf/httpd.conf");
         } else {
             return false;

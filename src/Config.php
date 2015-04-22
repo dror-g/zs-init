@@ -3,7 +3,7 @@ namespace Zend;
 
 use Exception;
 
-define("ZEND_CONFIG_SYSTEM_CONFIG_FILE",__DIR__ . '/../data/system.json');
+define("ZEND_CONFIG_SYSTEM_CONFIG_FILE", __DIR__ . '/../data/system.json');
 
 class Config
 {
@@ -17,14 +17,14 @@ class Config
     public function __construct(Log $log)
     {
         $this->config = [];
-        if(is_file(self::SYSTEM_CONFIG_FILE)) {
-            $this->config = json_decode(file_get_contents(self::SYSTEM_CONFIG_FILE),true);
+        if (is_file(self::SYSTEM_CONFIG_FILE)) {
+            $this->config = json_decode(file_get_contents(self::SYSTEM_CONFIG_FILE), true);
         }
         $userData = self::getUserData();
-        if($userData !== false) {
-            $tmp = json_decode($userData,true);
-            if(is_array($tmp)) {
-                $this->config = array_merge($tmp,$this->config);
+        if ($userData !== false) {
+            $tmp = json_decode($userData, true);
+            if (is_array($tmp)) {
+                $this->config = array_merge($tmp, $this->config);
             } else {
                 $tmp = var_export($tmp, true);
                 $error = json_last_error_msg();
@@ -37,7 +37,7 @@ class Config
 
     public function __get($name)
     {
-        if(isset($this->config[$name])) {
+        if (isset($this->config[$name])) {
             return $this->config[$name];
         }
         return null;
@@ -72,7 +72,7 @@ class Config
     {
         if (self::isEc2()) {
             return @file_get_contents("http://169.254.169.254/latest/user-data");
-        } else if (self::isAzure()) {
+        } elseif (self::isAzure()) {
             for ($i = 0; $i < self::MAX_RETRIES; $i++) {
                 $string = @file_get_contents('/var/lib/waagent/ovf-env.xml');
                 if ($string !== false) {
@@ -87,7 +87,7 @@ class Config
             xml_parse_into_struct($parser, file_get_contents('/var/lib/waagent/ovf-env.xml'), $values, $index);
             xml_parser_free($parser);
             return base64_decode($values[$index['CUSTOMDATA'][0]]['value']);
-        } else if (self::isGoogleComputeEngine()) {
+        } elseif (self::isGoogleComputeEngine()) {
             $opts = [
                 'http' => [
                     'method' => "GET",

@@ -14,9 +14,9 @@ class DebugSettingsStep extends AbstractStep
 
     public function execute(State $state)
     {
-        $state->log->log(Log::INFO,"Starting {$this->name}");
-        if(isset($state["ZEND_DEBUG"]) && $state["ZEND_DEBUG"] === true) {
-            $state->log->log(Log::INFO,"Setting logging level to debug in ini files");
+        $state->log->log(Log::INFO, "Starting {$this->name}");
+        if (isset($state["ZEND_DEBUG"]) && $state["ZEND_DEBUG"] === true) {
+            $state->log->log(Log::INFO, "Setting logging level to debug in ini files");
             self::pregReplaceFile('/zend_gui.logVerbosity\\s*=.*$/m', "zend_gui.logVerbosity = DEBUG", "/usr/local/zend/gui/config/zs_ui.ini");
             self::pregReplaceFile('/zend_gui.debugModeEnabled\\s*=.*$/m', 'zend_gui.debugModeEnabled = true', "/usr/local/zend/gui/config/zs_ui.ini");
             self::pregReplaceFile('/zend_jobqueue.daemon.log_verbosity_level\\s*=.*$/m', 'zend_jobqueue.daemon.log_verbosity_level=5', "/usr/local/zend/etc/jqd.ini");
@@ -26,14 +26,14 @@ class DebugSettingsStep extends AbstractStep
             self::pregReplaceFile('/zend_server_daemon.log_verbosity_level\\s*=.*$/m', 'zend_server_daemon.log_verbosity_level=5', "/usr/local/zend/etc/zsd.ini");
         }
 
-        $state->log->log(Log::INFO,"Cleaning semaphores");
+        $state->log->log(Log::INFO, "Cleaning semaphores");
         exec("/usr/local/zend/bin/clean_semaphores.sh");
         exec("rm -rf /usr/local/zend/tmp/zsemfile_*");
         exec("rm -rf /usr/local/zend/tmp/zshm_*");
         exec("truncate -s0 /usr/local/zend/var/log/datacache.log");
 
-        self::zendServerControl('start',$state->log);
-        $state->log->log(Log::INFO,"Finished {$this->name}");
+        self::zendServerControl('start', $state->log);
+        $state->log->log(Log::INFO, "Finished {$this->name}");
         return new Result(Result::STATUS_SUCCESS);
     }
 }

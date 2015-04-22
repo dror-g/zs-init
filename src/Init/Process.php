@@ -15,8 +15,8 @@ class Process
 
     public function __construct(array $steps)
     {
-        foreach($steps as $step) {
-            if(!($step instanceof Step)) {
+        foreach ($steps as $step) {
+            if (!($step instanceof Step)) {
                 throw new Exception("At least one of initialization steps is invalid");
             }
         }
@@ -28,17 +28,17 @@ class Process
     public function execute()
     {
         $success = true;
-        foreach($this->steps as $step) {
+        foreach ($this->steps as $step) {
             $result = $step->execute($this->state);
-            if($result->getStatus() != Result::STATUS_SUCCESS) {
-                $this->state->log->log(Log::ERROR,$result->getMessage());
+            if ($result->getStatus() != Result::STATUS_SUCCESS) {
+                $this->state->log->log(Log::ERROR, $result->getMessage());
                 break;
-            } else if($result->hasMessage()) {
-                $this->state->log->log(Log::WARNING,$result->getMessage());
+            } elseif ($result->hasMessage()) {
+                $this->state->log->log(Log::WARNING, $result->getMessage());
             }
         }
         unset($this->state->log);
-        if(!$success) {
+        if (!$success) {
             return $result->getMessage();
         }
         return true;

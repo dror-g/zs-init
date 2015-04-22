@@ -13,7 +13,7 @@ class ZpkDeployment extends AbstractDeployment
         parent::__construct($path, $log, false);
         date_default_timezone_set("UTC");
         $parts = parse_url($url);
-        if(!is_array($params)) {
+        if (!is_array($params)) {
             $params = array();
         }
         $this->name = $name;

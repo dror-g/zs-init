@@ -18,58 +18,58 @@ class ClusterJoinStep extends AbstractStep
 
     public function execute(State $state)
     {
-        $state->log->log(Log::INFO,"Starting {$this->name}");
-        if(isset($state['ZEND_ADMIN_PASSWORD']) && !isset($state['WEB_API_KEY_NAME'], $state['WEB_API_KEY_HASH'])) {
-            $state->log->log(Log::INFO,"Deleting AWS HTTP authentication module");
+        $state->log->log(Log::INFO, "Starting {$this->name}");
+        if (isset($state['ZEND_ADMIN_PASSWORD']) && !isset($state['WEB_API_KEY_NAME'], $state['WEB_API_KEY_HASH'])) {
+            $state->log->log(Log::INFO, "Deleting AWS HTTP authentication module");
             $this->deleteAmazonAuth();
 
-            $state->log->log(Log::INFO,"Restarting Zend Server lighttpd");
-            self::zendServerControl("restart-lighttpd",$state->log);
+            $state->log->log(Log::INFO, "Restarting Zend Server lighttpd");
+            self::zendServerControl("restart-lighttpd", $state->log);
 
             $this->waitForZendServer();
 
-            $state->log->log(Log::INFO,"Bootstrapping Zend Server");
+            $state->log->log(Log::INFO, "Bootstrapping Zend Server");
             $result = $this->bootstrapSingleServer($state);
-            if($result instanceof Result) {
+            if ($result instanceof Result) {
                 return $result;
             }
 
-            $state->log->log(Log::INFO,"Restarting PHP");
+            $state->log->log(Log::INFO, "Restarting PHP");
             $result = $this->restartPhp($state);
-            if($result instanceof Result) {
+            if ($result instanceof Result) {
                 return $result;
             }
         }
 
-        if(isset($state['ZEND_ADMIN_PASSWORD'],$state['ZEND_CLUSTER_DB_HOST'],$state['ZEND_CLUSTER_DB_USER'],$state['ZEND_CLUSTER_DB_PASSWORD'])) {
-            $state->log->log(Log::INFO,"Setting Session Clustering settings");
-            $result = $this->storeDirective($state,['zend_sc.ha.use_broadcast' => 0]);
-            if($result instanceof Result) {
+        if (isset($state['ZEND_ADMIN_PASSWORD'], $state['ZEND_CLUSTER_DB_HOST'], $state['ZEND_CLUSTER_DB_USER'], $state['ZEND_CLUSTER_DB_PASSWORD'])) {
+            $state->log->log(Log::INFO, "Setting Session Clustering settings");
+            $result = $this->storeDirective($state, ['zend_sc.ha.use_broadcast' => 0]);
+            if ($result instanceof Result) {
                 return $result;
             }
 
-            $state->log->log(Log::INFO,"Joining Zend Cluster");
+            $state->log->log(Log::INFO, "Joining Zend Cluster");
             $result = $this->serverAddToCluster($state);
-            if($result instanceof Result) {
+            if ($result instanceof Result) {
                 return $result;
             }
 
-            if($state['NODE_ID'] == 1) {
-                $state->log->log(Log::INFO,"Setting PHP session save handler to Session Clustering");
-                $result = $this->storeDirective($state,['session.save_handler' => 'cluster']);
-                if($result instanceof Result) {
+            if ($state['NODE_ID'] == 1) {
+                $state->log->log(Log::INFO, "Setting PHP session save handler to Session Clustering");
+                $result = $this->storeDirective($state, ['session.save_handler' => 'cluster']);
+                if ($result instanceof Result) {
                     return $result;
                 }
 
-                $state->log->log(Log::INFO,"Restarting PHP");
+                $state->log->log(Log::INFO, "Restarting PHP");
                 $result = $this->restartPhp($state);
-                if($result instanceof Result) {
+                if ($result instanceof Result) {
                     return $result;
                 }
             }
         }
 
-        $state->log->log(Log::INFO,"Finished {$this->name}");
+        $state->log->log(Log::INFO, "Finished {$this->name}");
 
         return new Result(Result::STATUS_SUCCESS);
     }
@@ -85,7 +85,7 @@ class ClusterJoinStep extends AbstractStep
 
     protected function bootstrapSingleServer(State $state)
     {
-        $client = new ZSWebApiClient($state['WEB_API_KEY_NAME'],$state['WEB_API_KEY_HASH']);
+        $client = new ZSWebApiClient($state['WEB_API_KEY_NAME'], $state['WEB_API_KEY_HASH']);
         $production = true;
         if ($state['EDITION'] == "developer" || (isset($state['ZEND_BOOTSTRAP_PRODUCTION']) && $state['ZEND_BOOTSTRAP_PRODUCTION'] === false)) {
             $production = false;
@@ -98,14 +98,14 @@ class ClusterJoinStep extends AbstractStep
             'acceptEula' => true,
         ]);
 
-        if(isset($response['error'])) {
-            return new Result(Result::STATUS_ERROR,$response['error']['errorCode'] . ": " . $response['error']['errorMessage']);
+        if (isset($response['error'])) {
+            return new Result(Result::STATUS_ERROR, $response['error']['errorCode'] . ": " . $response['error']['errorMessage']);
         }
 
         $state['WEB_API_KEY_NAME'] = $response['data']['key']['name'];
         $state['WEB_API_KEY_HASH'] = $response['data']['key']['hash'];
-        if(!$response['data']['success']) {
-            while(!($result = $this->tasksComplete($state))) {
+        if (!$response['data']['success']) {
+            while (!($result = $this->tasksComplete($state))) {
                 $strResult = $result ? "true" : "false";
                 $state->log->log(Log::INFO, "Waiting for ZS tasks to complete (last result: {$strResult})");
                 sleep(3);
@@ -116,20 +116,20 @@ class ClusterJoinStep extends AbstractStep
 
     protected function tasksComplete(State $state)
     {
-        $client = new ZSWebApiClient($state['WEB_API_KEY_NAME'],$state['WEB_API_KEY_HASH']);
+        $client = new ZSWebApiClient($state['WEB_API_KEY_NAME'], $state['WEB_API_KEY_HASH']);
         $response = $client->tasksComplete([], [], true);
         return $response['data']['tasksComplete'];
     }
 
-    protected function storeDirective(State $state,$directives)
+    protected function storeDirective(State $state, $directives)
     {
-        $client = new ZSWebApiClient($state['WEB_API_KEY_NAME'],$state['WEB_API_KEY_HASH']);
+        $client = new ZSWebApiClient($state['WEB_API_KEY_NAME'], $state['WEB_API_KEY_HASH']);
         $response = $client->configurationStoreDirectives([
             'directives' => $directives,
         ]);
 
-        if(isset($response['error'])) {
-            return new Result(Result::STATUS_ERROR,$response['error']['errorCode'] . ": " . $response['error']['errorMessage']);
+        if (isset($response['error'])) {
+            return new Result(Result::STATUS_ERROR, $response['error']['errorCode'] . ": " . $response['error']['errorMessage']);
         }
 
         return true;
@@ -137,7 +137,7 @@ class ClusterJoinStep extends AbstractStep
 
     protected function serverAddToCluster(State $state)
     {
-        $client = new ZSWebApiClient($state['WEB_API_KEY_NAME'],$state['WEB_API_KEY_HASH'],420);
+        $client = new ZSWebApiClient($state['WEB_API_KEY_NAME'], $state['WEB_API_KEY_HASH'], 420);
         $response = $client->serverAddToCluster([
             'serverName' => gethostname(),
             'nodeIp' => gethostbyname(gethostname()),
@@ -147,14 +147,14 @@ class ClusterJoinStep extends AbstractStep
             'dbName' => self::DB_NAME,
         ]);
 
-        if(isset($response['error'])) {
-            return new Result(Result::STATUS_ERROR,$response['error']['errorCode'] . ": " . $response['error']['errorMessage']);
+        if (isset($response['error'])) {
+            return new Result(Result::STATUS_ERROR, $response['error']['errorCode'] . ": " . $response['error']['errorMessage']);
         }
 
-        if($response['data']['serversInfo']) {
+        if ($response['data']['serversInfo']) {
             $state['NODE_ID'] = $response['data']['serversInfo']['id'];
         }
-        if($response['data']['clusterAdminKey']) {
+        if ($response['data']['clusterAdminKey']) {
             $state['WEB_API_KEY_NAME'] = $response['data']['clusterAdminKey']['name'];
             $state['WEB_API_KEY_HASH'] = $response['data']['clusterAdminKey']['hash'];
         }
@@ -164,13 +164,13 @@ class ClusterJoinStep extends AbstractStep
 
     protected function restartPhp(State $state)
     {
-        $client = new ZSWebApiClient($state['WEB_API_KEY_NAME'],$state['WEB_API_KEY_HASH'],420);
+        $client = new ZSWebApiClient($state['WEB_API_KEY_NAME'], $state['WEB_API_KEY_HASH'], 420);
         $response = $client->restartPhp([
             'force' => true,
         ]);
 
-        if(isset($response['error'])) {
-            return new Result(Result::STATUS_ERROR,$response['error']['errorCode'] . ": " . $response['error']['errorMessage']);
+        if (isset($response['error'])) {
+            return new Result(Result::STATUS_ERROR, $response['error']['errorCode'] . ": " . $response['error']['errorMessage']);
         }
 
         return true;

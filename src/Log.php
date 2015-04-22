@@ -11,8 +11,8 @@ class Log
 
     public function __construct($filename)
     {
-        $this->fd = fopen($filename,'a');
-        if(!$this->fd) {
+        $this->fd = fopen($filename, 'a');
+        if (!$this->fd) {
             throw new Exception("Failed openning log file {$filename}");
         }
     }
@@ -22,12 +22,12 @@ class Log
         fclose($this->fd);
     }
 
-    public function log($severity,$message)
+    public function log($severity, $message)
     {
-        if(flock($this->fd,LOCK_EX)) {
-            fwrite($this->fd,"{$severity}: {$message}\n");
+        if (flock($this->fd, LOCK_EX)) {
+            fwrite($this->fd, "{$severity}: {$message}\n");
             fflush($this->fd);
-            flock($this->fd,LOCK_UN);
+            flock($this->fd, LOCK_UN);
         } else {
             throw new Exception("Failed acquiring exclusive lock on log file");
         }

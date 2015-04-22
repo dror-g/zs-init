@@ -14,7 +14,7 @@ use Zend\Init\Steps\CustomScriptStep;
 use Zend\Init\Steps\FinishStep;
 use Zend\Init\Process;
 
-if($argc != 1) {
+if ($argc != 1) {
     die("Usage: {$argv[0]}\n");
 }
 
@@ -36,12 +36,12 @@ try {
 
     $process = new Process($steps);
     $result = $process->execute();
-} catch(Exception $e) {
-    $process->getState()->log->log(Log::ERROR,"Exception caught - {$e->getMessage()}");
+} catch (Exception $e) {
+    $process->getState()->log->log(Log::ERROR, "Exception caught - {$e->getMessage()}");
     echo "Exception caught: {$e->getMessage()}\n";
 }
 
-if($result !== true) {
+if ($result !== true) {
     echo "Error: {$result}\n";
     echo "Zend Server initialization result: failed.\n";
     exit(1);

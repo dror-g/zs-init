@@ -14,9 +14,9 @@ class ZsdWebApiKeyStep extends AbstractStep
 
     public function execute(State $state)
     {
-        $state->log->log(Log::INFO,"Starting {$this->name}");
+        $state->log->log(Log::INFO, "Starting {$this->name}");
         exec('sqlite3 /usr/local/zend/var/db/gui.db "UPDATE GUI_WEBAPI_KEYS SET HASH = LOWER(HEX(RANDOM())) WHERE NAME=\'zend-zsd\'"');
-        $state->log->log(Log::INFO,"Finished {$this->name}");
+        $state->log->log(Log::INFO, "Finished {$this->name}");
         return new Result(Result::STATUS_SUCCESS);
     }
 }

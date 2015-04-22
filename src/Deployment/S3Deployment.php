@@ -16,7 +16,7 @@ class S3Deployment extends AbstractDeployment
         $this->bucket = $bucket;
         $this->prefix = $prefix;
         date_default_timezone_set("UTC");
-        $region = substr(file_get_contents("http://169.254.169.254/latest/meta-data/placement/availability-zone"),0,-1);
+        $region = substr(file_get_contents("http://169.254.169.254/latest/meta-data/placement/availability-zone"), 0, -1);
         $options = ['region' => $region];
         if ($awsAccessKey !== null && $awsSecretKey !== null) {
             $options['key'] = $awsAccessKey;
