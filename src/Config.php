@@ -50,7 +50,12 @@ class Config
 
     public static function isEc2()
     {
-        return gethostbyname('instance-data.ec2.internal.') != 'instance-data.ec2.internal.';
+        $c = stream_context_create([
+            'http'=> [
+                'timeout' => 3,
+            ]
+        ]);
+        return file_get_contents('http://169.254.169.254/', false, $c) !== false;
     }
 
     public static function isGoogleComputeEngine()
