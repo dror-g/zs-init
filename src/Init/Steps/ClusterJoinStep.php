@@ -98,6 +98,10 @@ class ClusterJoinStep extends AbstractStep
             'acceptEula' => true,
         ]);
 
+        if (isset($response['error']) && $response['error']['errorCode'] == 406) {
+            return true;
+        }
+
         if (isset($response['error'])) {
             return new Result(Result::STATUS_ERROR, $response['error']['errorCode'] . ": " . $response['error']['errorMessage']);
         }
