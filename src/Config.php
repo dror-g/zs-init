@@ -76,17 +76,16 @@ class Config
             for ($i = 0; $i < self::MAX_RETRIES; $i++) {
                 $string = @file_get_contents('/var/lib/waagent/ovf-env.xml');
                 if ($string !== false) {
-                    break;
+                    $parser = xml_parser_create();
+                    xml_parse_into_struct($parser, $string, $values, $index);
+                    xml_parser_free($parser);
+                    if (isset($index['CUSTOMDATA']) && isset($index['CUSTOMDATA'][0])) {
+                        return base64_decode($values[$index['CUSTOMDATA'][0]]['value']);
+                    }
                 }
                 sleep(self::DELAY_BETWEEN_RETRIES);
             }
-            if ($string === false) {
-                return false;
-            }
-            $parser = xml_parser_create();
-            xml_parse_into_struct($parser, file_get_contents('/var/lib/waagent/ovf-env.xml'), $values, $index);
-            xml_parser_free($parser);
-            return base64_decode($values[$index['CUSTOMDATA'][0]]['value']);
+            return false;
         } elseif (self::isGoogleComputeEngine()) {
             $opts = [
                 'http' => [
