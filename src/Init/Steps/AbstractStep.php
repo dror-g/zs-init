@@ -45,6 +45,7 @@ abstract class AbstractStep implements Step
         if ($log) {
             $log->log(Log::INFO, "Executing /etc/init.d/zend-server {$action}");
         }
-        exec("/etc/init.d/zend-server {$action}");
+        exec("/etc/init.d/zend-server {$action}", $output);
+        $log->log(Log::INFO, "Result: " . PHP_EOL . implode(PHP_EOL, $output));
     }
 }
