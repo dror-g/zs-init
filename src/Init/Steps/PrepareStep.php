@@ -82,8 +82,16 @@ class PrepareStep extends AbstractStep
         if (Config::isEc2()) {
             return file_get_contents('http://169.254.169.254/latest/meta-data/public-ipv4');
         }
-        if (Config::isAzure()) {
-            return exec("hostname -I");
+        if (Config::isGoogleComputeEngine()) {
+            $opts = [
+                'http' => [
+                    'method' => "GET",
+                    'header' => "Metadata-Flavor: Google\r\n"
+                ]
+            ];
+            $context = stream_context_create($opts);
+            return @file_get_contents("http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip", false, $context);
         }
+        return exec("hostname -I");
     }
 }
