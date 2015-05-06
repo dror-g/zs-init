@@ -24,16 +24,19 @@ downloaded to /var/www
   files downloaded, so if you restrict it to some folder then folder will be
   downloaded to document root)
 * __ZEND\_ZPK__ (array) <sub>_[obsolete]_</sub> - Details of ZPK that will be deployed on server
-  startup. Following are the keys that can be specified in this array:
+  start up. Following are the keys that can be specified in this array:
   * __url__ (string) - URL from which ZPK can be downloaded
   * __name__ (string) - Name of application that will appear in Zend Server UI
     after deployment
   * __params__ (array) - Array of additional parameters that is passed to Zend
     Server during ZPK deployment. Keys of this array are names of parameters and
     respective values are values of parameters.
+* __ZEND\_DOCUMENT\_ROOT__ (string) - Document root relative to system default
+  document root. Should be used with git or S3 deployment (just set it to path
+  relative to your git repository or S3 folder).
 * __ZEND\_DEPLOYMENTS__ (array) - array in which each item is an object that
-  describes a deployment that will done after Zend Server start. Following is a
-  list of keys of such objects:
+  describes a deployment that will be done after Zend Server start. Following is
+  a list of keys of such objects:
   * __type__ (string) - required and must be one of "git", "s3" or "zpk".
   * __path__ (string) - required for all deployments and specifies into which
     path web application should be deployed. To deploy application to root,
@@ -53,17 +56,25 @@ downloaded to /var/www
   * __params__ (array) - required for "zpk" deployment. Array of additional
     parameters that is passed to Zend Server during ZPK deployment. Keys of this
     array are names of parameters and respective values are values of
-    parameters.
+    parameters. Parameter values are scanned for string $IP and if it is found,
+    then it is replaced with external IP of instance. This is useful, for example,
+    when deploying Wordpress application.
 * __ZEND\_DEBUG__ (bool) - set to true to start Zend Server in debug mode with maximum
   log verbosity
-* __ZEND\_DOCUMENT\_ROOT__ (string) - Document root relative to system default
-  document root. Should be used with git or S3 deployment (just set it to path
-  relative to your git repository or S3 folder).
 * __ZEND\_SCRIPT\_URL__ (string) - URL from which custom script must be
-  downloaded and executed.
-* __ZEND\_SCRIPT\_PATH__ (string) - Absolute path including filename where
-  custom script must be placed. After reboot this file will be overwritten by
-  redownloaded script.
+  downloaded and executed. Custom script is run after deployment.
+* __ZEND\_SCRIPT\_PATH__ (string) - Absolute path to where custom script must be
+  placed. If path is a directory, then script is saved in that directory with
+  filename extracted from URL. After reboot this file will be overwritten by
+  re-downloaded script.
+* __ZEND\_PRE\_SCRIPT\_URL__ (string) - URL from which custom preparation script
+  must be downloaded and executed. Preparation script is run before any other
+  actions of zs-init. It is intended for customization that has to be done
+  before deploying applications (for example local MySQL server installation).
+* __ZEND\_PRE\_SCRIPT\_PATH__ (string) - Absolute path to where custom
+  preparation script must be placed. If path is a directory, then script is
+  saved in that directory with filename extracted from URL. After reboot this
+  file will be overwritten by re-downloaded script.
 * __AWS\_ACCESS\_KEY__ (string) - Access key to use for all AWS S3 operations.
 * __AWS\_SECRET\_KEY__ (string) - Secret key to use for all AWS S3 operations.
 
