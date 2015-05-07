@@ -22,7 +22,7 @@ class LicenseStep extends AbstractStep
             $state->log->log(Log::INFO, "Analyzing license file");
             $license = json_decode(file_get_contents(self::LICENSE_FILE), true);
             if ($license == null) {
-                return new StepResult(Result::STATUS_SUCCESS, "Could not parse license file");
+                return new Result(Result::STATUS_SUCCESS, "Could not parse license file");
             }
 
             $state->log->log(Log::INFO, "Setting up license");

@@ -1,6 +1,7 @@
 <?php
 namespace Zend\Init\Steps;
 
+use Aws\S3\S3Client;
 use Zend\Log;
 use Zend\State;
 use Zend\Init\Result;
