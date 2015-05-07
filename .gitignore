@@ -1,2 +1,7 @@
 vendor/
 composer.lock
+
+# Zend Studio
+.project
+.buildpath
+.settings
