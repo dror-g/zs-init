@@ -10,6 +10,7 @@ use Exception;
 class ClusterJoinStep extends AbstractStep
 {
     const DB_NAME='ZendServer';
+    const CLUSTER_JOIN_RETRY_DELAY=5;
 
     public function __construct()
     {
@@ -132,9 +133,7 @@ class ClusterJoinStep extends AbstractStep
     protected function storeDirective(State $state, $directives)
     {
         $client = new ZSWebApiClient($state['WEB_API_KEY_NAME'], $state['WEB_API_KEY_HASH']);
-        $response = $client->configurationStoreDirectives([
-            'directives' => $directives,
-        ]);
+        $response = $client->configurationStoreDirectives(['directives' => $directives]);
 
         if (isset($response['error'])) {
             return new Result(Result::STATUS_ERROR, $response['error']['errorCode'] . ": " . $response['error']['errorMessage']);
@@ -146,17 +145,26 @@ class ClusterJoinStep extends AbstractStep
     protected function serverAddToCluster(State $state)
     {
         $client = new ZSWebApiClient($state['WEB_API_KEY_NAME'], $state['WEB_API_KEY_HASH'], 420);
-        $response = $client->serverAddToCluster([
-            'serverName' => gethostname(),
-            'nodeIp' => gethostbyname(gethostname()),
-            'dbHost' => $state['ZEND_CLUSTER_DB_HOST'],
-            'dbUsername' => $state['ZEND_CLUSTER_DB_USER'],
-            'dbPassword' => $state['ZEND_CLUSTER_DB_PASSWORD'],
-            'dbName' => self::DB_NAME,
-        ]);
+        while (true) {
+            $response = $client->serverAddToCluster([
+                'serverName' => gethostname(),
+                'nodeIp' => gethostbyname(gethostname()),
+                'dbHost' => $state['ZEND_CLUSTER_DB_HOST'],
+                'dbUsername' => $state['ZEND_CLUSTER_DB_USER'],
+                'dbPassword' => $state['ZEND_CLUSTER_DB_PASSWORD'],
+                'dbName' => self::DB_NAME
+            ]);
 
-        if (isset($response['error'])) {
-            return new Result(Result::STATUS_ERROR, $response['error']['errorCode'] . ": " . $response['error']['errorMessage']);
+            if ($response['code'] == 409) {
+                $state->log->log(Log::INFO, "{$response['error']['errorCode']} ({$response['code']}): sleeping before retrying to join cluster");
+                sleep(self::CLUSTER_JOIN_RETRY_DELAY);
+                continue;
+            }
+
+            if (isset($response['error'])) {
+                return new Result(Result::STATUS_ERROR, $response['error']['errorCode'] . ": " . $response['error']['errorMessage']);
+            }
+            break;
         }
 
         if ($response['data']['serversInfo']) {
@@ -173,9 +181,7 @@ class ClusterJoinStep extends AbstractStep
     protected function restartPhp(State $state)
     {
         $client = new ZSWebApiClient($state['WEB_API_KEY_NAME'], $state['WEB_API_KEY_HASH'], 420);
-        $response = $client->restartPhp([
-            'force' => true,
-        ]);
+        $response = $client->restartPhp(['force' => true]);
 
         if (isset($response['error'])) {
             return new Result(Result::STATUS_ERROR, $response['error']['errorCode'] . ": " . $response['error']['errorMessage']);
