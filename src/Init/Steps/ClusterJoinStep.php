@@ -27,6 +27,12 @@ class ClusterJoinStep extends AbstractStep
             $state->log->log(Log::INFO, "Restarting Zend Server lighttpd");
             self::zendServerControl("restart-lighttpd", $state->log);
 
+            while (exec("pgrep -f /usr/local/zend/gui/lighttpd/sbin/php | wc -l") == 1) {
+                $state->log->log(Log::INFO, "Restarting Zend Server lighttpd again because PHP was not started");
+                self::zendServerControl("restart-lighttpd", $state->log);
+                sleep(5);
+            }
+
             $this->waitForZendServer();
 
             $state->log->log(Log::INFO, "Bootstrapping Zend Server");
