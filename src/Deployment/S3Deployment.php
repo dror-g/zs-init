@@ -9,12 +9,14 @@ class S3Deployment extends AbstractDeployment
     private $s3;
     private $bucket;
     private $prefix;
+    private $leavePrefix;
 
-    public function __construct($path, Log $log, $relativeRoot, $bucket, $prefix, $awsAccessKey = null, $awsSecretKey = null)
+    public function __construct($path, Log $log, $relativeRoot, $bucket, $prefix, $leavePrefix, $awsAccessKey = null, $awsSecretKey = null)
     {
         parent::__construct($path, $log, true, $relativeRoot);
         $this->bucket = $bucket;
         $this->prefix = $prefix;
+        $this->leavePrefix = (bool) $leavePrefix;
         date_default_timezone_set("UTC");
         $region = substr(file_get_contents("http://169.254.169.254/latest/meta-data/placement/availability-zone"), 0, -1);
         $options = ['region' => $region];
@@ -32,7 +34,7 @@ class S3Deployment extends AbstractDeployment
         $tmpDir = self::createTmpDir();
         $this->s3->downloadBucket($tmpDir, $this->bucket, $this->prefix);
         $srcDir = $tmpDir;
-        if ($this->prefix !== null && $this->prefix !== "") {
+        if (!$this->leavePrefix && $this->prefix !== null && $this->prefix !== "") {
             $srcDir .= "/{$this->prefix}";
         }
         self::moveDirContent($srcDir, $this->deploymentDir);

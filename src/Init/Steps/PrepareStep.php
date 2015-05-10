@@ -41,6 +41,7 @@ class PrepareStep extends AbstractStep
                 'prefix' => isset($state['ZEND_S3_PREFIX']) ? $state['ZEND_S3_PREFIX'] : "",
                 'path' => '/',
                 'relativeRoot' => isset($state['ZEND_DOCUMENT_ROOT']) ? $state['ZEND_DOCUMENT_ROOT'] : '',
+                'leavePrefix' => true,
             ];
             $state['ZEND_DEPLOYMENTS'] = $deployments;
             unset($state['ZEND_S3_BUCKET'], $state['ZEND_S3_PREFIX']);

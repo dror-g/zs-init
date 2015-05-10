@@ -36,7 +36,7 @@ class DeploymentStep extends AbstractStep
                 $restartApache = true;
             } elseif ($deployment['type'] == 's3') {
                 $state->log->log(Log::INFO, "Deploying S3 application from s3://{$deployment['bucket']}/{$deployment['prefix']} to {$deployment['path']}");
-                $deploymentObj = new S3Deployment($deployment['path'], $state->log, @$deployment['relativeRoot'], $deployment['bucket'], $deployment['prefix'], $state['AWS_ACCESS_KEY'], $state['AWS_SECRET_KEY']);
+                $deploymentObj = new S3Deployment($deployment['path'], $state->log, @$deployment['relativeRoot'], $deployment['bucket'], $deployment['prefix'], @$deployment['leavePrefix'], $state['AWS_ACCESS_KEY'], $state['AWS_SECRET_KEY']);
                 $restartApache = true;
             } elseif ($deployment['type'] === 'zpk') {
                 $state->log->log(Log::INFO, "Deploying ZPK application to {$deployment['path']}");
