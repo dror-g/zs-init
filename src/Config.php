@@ -68,6 +68,11 @@ class Config
         return is_dir('/var/lib/waagent');
     }
 
+    public static function isDocker()
+    {
+        return file_exists('/.dockerenv');
+    }
+
     public static function getUserData()
     {
         if (self::isEc2()) {
@@ -95,7 +100,15 @@ class Config
             ];
             $context = stream_context_create($opts);
             return @file_get_contents("http://metadata.google.internal/computeMetadata/v1/instance/attributes/zend", false, $context);
-        }
+        } elseif (self::isDocker()) {
+	    $arr = [];
+	    foreach($_SERVER as $key => $value) {
+        	if(preg_match('/^ZEND/',$key)){
+        	    $arr[$key] = $value;
+        	}
+	    }
+	    return json_encode($arr);
+	}
         return false;
     }
 }
