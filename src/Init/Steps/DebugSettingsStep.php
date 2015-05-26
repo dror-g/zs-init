@@ -24,6 +24,7 @@ class DebugSettingsStep extends AbstractStep
             self::pregReplaceFile('/zend_sc.daemon.log_verbosity_level\\s*=.*$/m', 'zend_sc.daemon.log_verbosity_level=5', "/usr/local/zend/etc/scd.ini");
             self::pregReplaceFile('/zend_deployment.daemon.log_verbosity_level\\s*=.*$/m', 'zend_deployment.daemon.log_verbosity_level=5', "/usr/local/zend/etc/zdd.ini");
             self::pregReplaceFile('/zend_server_daemon.log_verbosity_level\\s*=.*$/m', 'zend_server_daemon.log_verbosity_level=5', "/usr/local/zend/etc/zsd.ini");
+            self::pregReplaceFile('/zend_datacache\\.log_verbosity_level\\s*=.*$/m', 'zend_datacache.log_verbosity_level=5', '/usr/local/zend/etc/conf.d/datacache.ini');
         }
 
         $state->log->log(Log::INFO, "Cleaning semaphores");
@@ -31,6 +32,7 @@ class DebugSettingsStep extends AbstractStep
         exec("rm -rf /usr/local/zend/tmp/zsemfile_*");
         exec("rm -rf /usr/local/zend/tmp/zshm_*");
         exec("truncate -s0 /usr/local/zend/var/log/datacache.log");
+        exec("truncate -s0 /usr/local/zend/var/log/php.log");
 
         self::zendServerControl('start', $state->log);
         $state->log->log(Log::INFO, "Finished {$this->name}");
