@@ -34,6 +34,9 @@ class DebugSettingsStep extends AbstractStep
         exec("truncate -s0 /usr/local/zend/var/log/datacache.log");
         exec("truncate -s0 /usr/local/zend/var/log/php.log");
 
+        // Following is a workaround for broken datacache
+        exec("ipcrm -s 0");
+
         self::zendServerControl('start', $state->log);
         $state->log->log(Log::INFO, "Finished {$this->name}");
         return new Result(Result::STATUS_SUCCESS);
