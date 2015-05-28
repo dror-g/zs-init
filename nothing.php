@@ -20,7 +20,7 @@ if ($exitCode !== 0) {
 
 $state = new State($log);
 
-$nothingArgs = [];
+$nothingArgs = [$nothing];
 if (isset($state['ZEND_CLUSTER_DB_HOST'], $state['ZEND_CLUSTER_DB_USER'], $state['ZEND_CLUSTER_DB_PASSWORD'], $state['NODE_ID'], $state['WEB_API_KEY_NAME'], $state['WEB_API_KEY_HASH'])) {
     $nothingArgs[] = $state['ZEND_CLUSTER_DB_HOST'];
     $nothingArgs[] = 3306;
@@ -32,9 +32,5 @@ if (isset($state['ZEND_CLUSTER_DB_HOST'], $state['ZEND_CLUSTER_DB_USER'], $state
     $nothingArgs[] = $state['WEB_API_KEY_HASH'];
 }
 
-if (!extension_loaded('pcntl')) {
-    dl('pcntl.so');
-}
-
 $log->log(Log::INFO, "Executing nothing");
-pcntl_exec($nothing, $nothingArgs);
+exec(implode(' ', $nothingArgs));
