@@ -1,21 +1,40 @@
 <?php
 require(__DIR__ . '/vendor/autoload.php');
 
+use Zend\Log;
+use Zend\State;
+use Zend\Init\Steps\ClusterJoinStep;
+
 if ($argc != 2) {
-    die("Usage: {$argv[0]} <path-to-nothing> [optional parameters to nothing]\n");
+    die("Usage: {$argv[0]} <path-to-nothing>\n");
 }
 
 $nothing = $argv[1];
+$log = new Log("php://stdout");
 
 exec(__DIR__ . "/init.php", $output, $exitCode);
 
 if ($exitCode !== 0) {
-    echo "Warning: failed running init.php".PHP_EOL;
-    echo implode(PHP_EOL, $output);
-    echo PHP_EOL;
+    $log->log(Log::WARNING, "Warning: failed running init.php");
 }
 
-$nothingArgs = array_slice($argv, 2);
+$state = new State($log);
 
-echo "Executing nothing".PHP_EOL;
+$nothingArgs = [];
+if (isset($state['ZEND_CLUSTER_DB_HOST'], $state['ZEND_CLUSTER_DB_USER'], $state['ZEND_CLUSTER_DB_PASSWORD'], $state['NODE_ID'], $state['WEB_API_KEY_NAME'], $state['WEB_API_KEY_HASH'])) {
+    $nothingArgs[] = $state['ZEND_CLUSTER_DB_HOST'];
+    $nothingArgs[] = 3306;
+    $nothingArgs[] = $state['ZEND_CLUSTER_DB_USER'];
+    $nothingArgs[] = $state['ZEND_CLUSTER_DB_PASSWORD'];
+    $nothingArgs[] = ClusterJoinStep::DB_NAME;
+    $nothingArgs[] = $state['NODE_ID'];
+    $nothingArgs[] = $state['WEB_API_KEY_NAME'];
+    $nothingArgs[] = $state['WEB_API_KEY_HASH'];
+}
+
+if (!extension_loaded('pcntl')) {
+    dl('pcntl.so');
+}
+
+$log->log(Log::INFO, "Executing nothing");
 pcntl_exec($nothing, $nothingArgs);
