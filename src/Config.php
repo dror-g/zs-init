@@ -101,14 +101,14 @@ class Config
             $context = stream_context_create($opts);
             return @file_get_contents("http://metadata.google.internal/computeMetadata/v1/instance/attributes/zend", false, $context);
         } elseif (self::isDocker()) {
-	    $arr = [];
-	    foreach($_SERVER as $key => $value) {
-        	if(preg_match('/^ZEND/',$key)){
-        	    $arr[$key] = $value;
-        	}
-	    }
-	    return json_encode($arr);
-	}
+            $arr = [];
+            foreach ($_SERVER as $key => $value) {
+                if (preg_match('/^ZEND/', $key)) {
+                    $arr[$key] = $value;
+                }
+            }
+            return json_encode($arr);
+        }
         return false;
     }
 }
