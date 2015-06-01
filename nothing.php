@@ -1,14 +1,24 @@
 #!/usr/local/zend/bin/php
 <?php
+declare(ticks = 1);
 require(__DIR__ . '/vendor/autoload.php');
 
 use Zend\Log;
 use Zend\State;
 use Zend\Init\Steps\ClusterJoinStep;
 
+function sigChldHandler()
+{
+    while (pctnl_wait($status, WNOHANG) > 0) {
+        usleep(10000);
+    }
+}
+
 if ($argc != 2) {
     die("Usage: {$argv[0]} <path-to-nothing>\n");
 }
+
+pcntl_signal(SIGCHLD, 'sigChldHandler');
 
 $nothing = $argv[1];
 $log = new Log("php://stdout");
