@@ -19,9 +19,10 @@ class State implements ArrayAccess
             $state = json_decode(file_get_contents(self::STATE_FILE), true);
         }
         if (!is_array($state)) {
-            $config = new Config($log);
-            $state = $config->getConfig();
+            $state = [];
         }
+        $config = new Config($log);
+        $state = $config->getConfig() + $state;
 
         $this->state = new ArrayObject($state, ArrayObject::ARRAY_AS_PROPS);
         $this->log = $log;
