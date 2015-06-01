@@ -29,6 +29,7 @@ class State implements ArrayAccess
 
     public function __destruct()
     {
+        unset($this->log);
         file_put_contents(self::STATE_FILE, json_encode($this->state));
     }
 
