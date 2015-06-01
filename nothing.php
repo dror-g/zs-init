@@ -21,7 +21,7 @@ if ($exitCode !== 0) {
 
 $state = new State($log);
 
-$nothingArgs = [$nothing];
+$nothingArgs = [];
 if (isset($state['ZEND_CLUSTER_DB_HOST'], $state['ZEND_CLUSTER_DB_USER'], $state['ZEND_CLUSTER_DB_PASSWORD'], $state['NODE_ID'], $state['WEB_API_KEY_NAME'], $state['WEB_API_KEY_HASH'])) {
     $nothingArgs[] = $state['ZEND_CLUSTER_DB_HOST'];
     $nothingArgs[] = 3306;
@@ -34,4 +34,4 @@ if (isset($state['ZEND_CLUSTER_DB_HOST'], $state['ZEND_CLUSTER_DB_USER'], $state
 }
 
 $log->log(Log::INFO, "Executing nothing");
-exec(implode(' ', $nothingArgs));
+pcntl_exec($nothing, $nothingArgs);
