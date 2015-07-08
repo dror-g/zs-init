@@ -99,7 +99,18 @@ class Config
                 ]
             ];
             $context = stream_context_create($opts);
-            return @file_get_contents("http://metadata.google.internal/computeMetadata/v1/instance/attributes/zend", false, $context);
+            $gcloud = @file_get_contents("http://metadata.google.internal/computeMetadata/v1/instance/attributes/zend", false, $context);
+            if (strpos($gcloud, "ZEND_ADMIN_PASSWORD")) {
+                return $gcloud;
+            }
+            $pantheon = [
+                "ZEND_ADMIN_PASSWORD" => @file_get_contents("http://metadata.google.internal/computeMetadata/v1/instance/attributes/ZEND_ADMIN_PASSWORD", false, $context),
+            ];
+            if ($pantheon["ZEND_ADMIN_PASSWORD"] === false) {
+                $pantheon["ZEND_ADMIN_PASSWORD"] = substr(base64_encode(hash("sha256", time())), 0, 8);
+            }
+            return json_encode($pantheon);
+
         } elseif (self::isDocker()) {
             $arr = [];
             foreach ($_SERVER as $key => $value) {
