@@ -53,7 +53,7 @@ class ZpkDeployment extends AbstractDeployment
             $this->log->log(Log::INFO, "Waiting for application ID {$appId} deployment to finish");
             sleep(self::DELAY);
             $response = $client->applicationGetStatus([], [], true);
-            if ($response['error'] === null) {
+            if ($response['error'] === null && is_array($response['data']) && is_array($response['data']['applicationsList'])) {
                 foreach ($response['data']['applicationsList'] as $app) {
                     if ($app['id'] == $appId) {
                         if ($app['status'] == 'deployed') {
