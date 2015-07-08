@@ -13,6 +13,7 @@ use Zend\Init\Steps\DeploymentStep;
 use Zend\Init\Steps\CustomScriptStep;
 use Zend\Init\Steps\FinishStep;
 use Zend\Init\Process;
+use Zend\Config;
 
 if ($argc != 1) {
     die("Usage: {$argv[0]}\n");
@@ -20,6 +21,7 @@ if ($argc != 1) {
 
 ini_set("memory_limit", "1G");
 
+$process = null;
 $result = null;
 try {
     $steps = [
@@ -48,5 +50,16 @@ if ($result !== true) {
 }
 
 echo "Zend Server initialization result: success.\n";
+
+if (Config::isGoogleComputeEngine()) {
+    $passw = $process->getState()['ZEND_ADMIN_PASSWORD'];
+    echo "\n\n";
+    echo "#########################################################################\n";
+    echo "#                                                                       #\n";
+    echo "#                Zend Server admin password: {$passw}                   #\n";
+    echo "#                                                                       #\n";
+    echo "#########################################################################\n";
+    echo "\n\n";
+}
 
 exit(0);
