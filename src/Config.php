@@ -118,8 +118,8 @@ class Config
                     $arr[$key] = $value;
                 }
             }
-            $arr[ZEND_BOOTSTRAP_PRODUCTION] = boolval($arr[ZEND_BOOTSTRAP_PRODUCTION]);
-            $arr[ZEND_DEBUG] = boolval($arr[ZEND_DEBUG]);
+            $arr['ZEND_BOOTSTRAP_PRODUCTION'] = boolval($arr['ZEND_BOOTSTRAP_PRODUCTION']);
+            $arr['ZEND_DEBUG'] = boolval($arr['ZEND_DEBUG']);
             return json_encode($arr);
         }
         return false;
