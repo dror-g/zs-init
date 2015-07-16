@@ -9,8 +9,14 @@ if ($argc != 2) {
     die("Usage: {$argv[0]} <name>\n");
 }
 
-$name = $argv[1];
 $log = new Log("php://stderr");
 $state = new State($log);
 
-echo $state[$name];
+$names = explode('.', $argv[1]);
+$arr = $state;
+for ($i = 0; $i < count($names); $i++) {
+    if (is_array($arr) || $arr instanceof ArrayAccess) {
+        $arr = $arr[$names[$i]];
+    }
+}
+echo $arr . PHP_EOL;
