@@ -118,8 +118,8 @@ class Config
                     $arr[$key] = $value;
                 }
             }
-            if(isset($arr['ZEND_BOOTSTRAP_PRODUCTION'])) $arr['ZEND_BOOTSTRAP_PRODUCTION']=boolval($arr['ZEND_BOOTSTRAP_PRODUCTION']);
-            if(isset($arr['ZEND_DEBUG'])) $arr['ZEND_DEBUG']=boolval($arr['ZEND_DEBUG']);
+            #if(isset($arr['ZEND_BOOTSTRAP_PRODUCTION'])) $arr['ZEND_BOOTSTRAP_PRODUCTION']=boolval($arr['ZEND_BOOTSTRAP_PRODUCTION']);
+            #if(isset($arr['ZEND_DEBUG'])) $arr['ZEND_DEBUG']=boolval($arr['ZEND_DEBUG']);
             return json_encode($arr);
         }
         return false;
