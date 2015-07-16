@@ -40,7 +40,7 @@ class DeploymentStep extends AbstractStep
                 $restartApache = true;
             } elseif ($deployment['type'] === 'zpk') {
                 $state->log->log(Log::INFO, "Deploying ZPK application to {$deployment['path']}");
-                $deploymentObj = new ZpkDeployment($deployment['path'], $state->log, $deployment['url'], $deployment['name'], $deployment['params'], $state['WEB_API_KEY_NAME'], $state['WEB_API_KEY_HASH']);
+                $deploymentObj = new ZpkDeployment($deployment['path'], $state->log, $deployment['url'], $deployment['name'], @$deployment['params'], $state['WEB_API_KEY_NAME'], $state['WEB_API_KEY_HASH']);
                 $restartZendServer = true;
             } else {
                 $state->log->log(Log::ERROR, "Unknown deployment type '{$deployment['type']}'");
